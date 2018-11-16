@@ -3,6 +3,8 @@ Got your own nightscout site running?
 
 Then this is for you!
 
+![alt text](./screenshot.png)
+
 Currently working OS: Ubuntu
 
 Future features:
