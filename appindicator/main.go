@@ -107,7 +107,7 @@ func (t *tray) onReady() {
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit")
 
 	go func() {
-		//todo make these things return events to the statemanager
+		//todo make these things return events to the applicationmanager
 		<-mQuitOrig.ClickedCh
 		fmt.Println("Requesting quit")
 		close(t.newReading)
@@ -116,7 +116,7 @@ func (t *tray) onReady() {
 	}()
 
 	for {
-		//todo make these things return events to the statemanager
+		//todo make these things return events to the applicationmanager
 		select {
 		case <-mUrl.ClickedCh:
 			open.Run("https://github.com/digiexchris")

@@ -1,4 +1,4 @@
-package statemanager
+package applicationmanager
 
 import (
 	"encoding/json"
@@ -12,13 +12,13 @@ import (
 	"time"
 )
 
-type StateManager interface {
+type ApplicationManager interface {
 	RefreshValues()
 	SetUnits(defaultMmol bool)
 	Run()
 }
 
-type stateManager struct {
+type applicationManager struct {
 	units            bool
 	value            float32
 	delta            float32
@@ -28,7 +28,7 @@ type stateManager struct {
 	AppIndicator     appindicator.Tray
 }
 
-func (sm *stateManager) SetUnits(defaultMmol bool) {
+func (sm *applicationManager) SetUnits(defaultMmol bool) {
 	switch defaultMmol {
 	case unitconverter.MGDL:
 		log.Println("Setting mg/dl")
@@ -40,10 +40,10 @@ func (sm *stateManager) SetUnits(defaultMmol bool) {
 	sm.AppIndicator.SetUnits(defaultMmol)
 }
 
-func New() StateManager {
+func New() ApplicationManager {
 
 	readingChannel := make(chan unitconverter.Reading, 4)
-	sm := &stateManager{
+	sm := &applicationManager{
 		AppIndicator: appindicator.New(readingChannel),
 		Readings:     readingChannel,
 	}
@@ -52,7 +52,7 @@ func New() StateManager {
 	return sm
 }
 
-func (sm *stateManager) RefreshValues() {
+func (sm *applicationManager) RefreshValues() {
 	reading := refresh()
 	sm.Readings <- reading
 	if reading.Error != nil {
@@ -114,7 +114,7 @@ func refresh() (reading unitconverter.Reading) {
 	}
 }
 
-func (sm *stateManager) Run() {
+func (sm *applicationManager) Run() {
 
 	ticker := time.NewTicker(time.Second * configuration.App.CheckInterval)
 	go func() {

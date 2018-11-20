@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/digiexchris/go-nightscout-indicator/applicationmanager"
 	"github.com/digiexchris/go-nightscout-indicator/configuration"
-	"github.com/digiexchris/go-nightscout-indicator/statemanager"
 )
 
 func main() {
@@ -11,8 +11,8 @@ func main() {
 		panic(err)
 	}
 
-	sm := statemanager.New()
-	sm.SetUnits(configuration.App.DefaultMmol)
+	app := applicationmanager.New()
+	app.SetUnits(configuration.App.DefaultMmol)
 
-	sm.Run()
+	app.Run()
 }
