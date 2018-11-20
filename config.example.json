@@ -1,5 +1,6 @@
 {
   "NightscoutHost" : "example.herokuapp.com",
   "ApiSecret" : "121d141619sdf5cc8787ssdf77d6a1ssdf38fdcd",
-  "DefaultMmol" : false
+  "DefaultMmol" : false,
+  "CheckInterval": 60
 }

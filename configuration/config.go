@@ -6,14 +6,16 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 var App Config
 
 type Config struct {
 	NightscoutHost string
-	ApiSecret string
-	DefaultMmol bool
+	ApiSecret      string
+	DefaultMmol    bool
+	CheckInterval  time.Duration
 }
 
 func Load() error {
@@ -23,10 +25,13 @@ func Load() error {
 		return err
 	}
 
-	file := fmt.Sprintf("%s/config.json",dir)
+	file := fmt.Sprintf("%s/config.json", dir)
 	log.Printf("Attempting to load configuration from %s", file)
 
 	App = Config{}
-	return gonfig.GetConf(file, &App)
-}
+	err = gonfig.GetConf(file, &App)
 
+	log.Printf("Refresh Interval: %d", App.CheckInterval)
+
+	return err
+}
