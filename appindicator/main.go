@@ -3,6 +3,7 @@ package appindicator
 import (
 	"fmt"
 	"github.com/digiexchris/go-nightscout-indicator/icon"
+	"github.com/digiexchris/go-nightscout-indicator/nightscoutclient"
 	"github.com/digiexchris/go-nightscout-indicator/unitconverter"
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
@@ -12,21 +13,21 @@ import (
 type tray struct {
 	units          bool
 	errorState     bool
-	currentReading unitconverter.Reading //for use if we have to modify the existing display
-	newReading     chan unitconverter.Reading
+	currentReading nightscoutclient.Reading //for use if we have to modify the existing display
+	newReading     chan nightscoutclient.Reading
 }
 
 type Tray interface {
 	Run()
 	SetUnits(bool)
-	SetTitleValues(reading unitconverter.Reading)
+	SetTitleValues(reading nightscoutclient.Reading)
 	SetErrorIcon()
 	SetNormalIcon()
 	GetUnits() bool
 	ManageErrorState()
 }
 
-func New(r chan unitconverter.Reading) Tray {
+func New(r chan nightscoutclient.Reading) Tray {
 	tray := &tray{
 		newReading: r,
 	}
@@ -63,12 +64,12 @@ func (t *tray) Run() {
 
 func (t *tray) SetUnits(mmol bool) {
 	t.units = mmol
-	systray.SetTitle(unitconverter.FormatTitle(t.units, t.currentReading.SGV, t.currentReading.Delta))
+	systray.SetTitle(unitconverter.FormatTitle(t.units, t.currentReading.SGV, t.currentReading.Delta, t.currentReading.Direction))
 }
 
-func (t *tray) SetTitleValues(reading unitconverter.Reading) {
+func (t *tray) SetTitleValues(reading nightscoutclient.Reading) {
 	t.currentReading = reading // save for in case we switch units in the future and need to recalculate the current reading
-	systray.SetTitle(unitconverter.FormatTitle(t.units, reading.SGV, reading.Delta))
+	systray.SetTitle(unitconverter.FormatTitle(t.units, reading.SGV, reading.Delta, reading.Direction))
 }
 
 func (t *tray) SetErrorIcon() {
@@ -99,7 +100,7 @@ func (t *tray) ManageErrorState() {
 
 func (t *tray) onReady() {
 
-	systray.SetTitle(unitconverter.FormatTitle(t.units, t.currentReading.SGV, t.currentReading.Delta))
+	systray.SetTitle(unitconverter.FormatTitle(t.units, t.currentReading.SGV, t.currentReading.Delta, t.currentReading.Direction))
 	systray.SetTooltip("Nightscout Indicator")
 	mUrl := systray.AddMenuItem("About", "About the indicator")
 

@@ -21,7 +21,7 @@ type applicationManager struct {
 	delta            float32
 	retrievalError   error
 	displayErrorIcon bool
-	Readings         chan unitconverter.Reading
+	Readings         chan nightscoutclient.Reading
 	AppIndicator     appindicator.Tray
 	Client           nightscoutclient.NightscoutClient
 }
@@ -40,7 +40,7 @@ func (sm *applicationManager) SetUnits(defaultMmol bool) {
 
 func New() ApplicationManager {
 
-	readingChannel := make(chan unitconverter.Reading, 4)
+	readingChannel := make(chan nightscoutclient.Reading, 4)
 	sm := &applicationManager{
 		AppIndicator: appindicator.New(readingChannel),
 		Readings:     readingChannel,

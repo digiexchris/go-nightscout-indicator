@@ -21,15 +21,15 @@ move these tests to their own test files that describe things better
 var _ = Describe("Convert units", func() {
 	Context("When MMOL", func() {
 		It("Displays correct values", func() {
-			output := unitconverter.FormatTitle(unitconverter.MMOL, 100, 12)
-			Expect(output).To(Equal("5.6 (0.667)"))
+			output := unitconverter.FormatTitle(unitconverter.MMOL, 100, 12, "Flat")
+			Expect(output).To(Equal("5.6 (0.667 →)"))
 		})
 	})
 
 	Context("When mg/dl", func() {
 		It("Displays correct values", func() {
-			output := unitconverter.FormatTitle(unitconverter.MGDL, 100, 12)
-			Expect(output).To(Equal("100 (12)"))
+			output := unitconverter.FormatTitle(unitconverter.MGDL, 100, 12, "Flat")
+			Expect(output).To(Equal("100 (12 →)"))
 		})
 	})
 })

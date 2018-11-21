@@ -3,14 +3,20 @@ package nightscoutclient
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/digiexchris/go-nightscout-indicator/unitconverter"
 	"io/ioutil"
 	"net/http"
 	"time"
 )
 
+type Reading struct {
+	SGV       float32
+	Delta     float32
+	Error     error
+	Direction string
+}
+
 type NightscoutClient interface {
-	Get(host string, secret string) unitconverter.Reading
+	Get(host string, secret string) Reading
 }
 
 type Client struct {
@@ -45,10 +51,11 @@ func (hc *httpClient) Do(req *http.Request) (*http.Response, error) {
 	return hc.client.Do(req)
 }
 
-func (c *Client) Get(host string, secret string) unitconverter.Reading {
+func (c *Client) Get(host string, secret string) Reading {
 	type values struct {
-		Sgv   float32
-		Delta float32
+		Sgv       float32
+		Delta     float32
+		Direction string
 	}
 
 	url := fmt.Sprintf("https://%s/api/v1/entries/current.json", host)
@@ -62,7 +69,7 @@ func (c *Client) Get(host string, secret string) unitconverter.Reading {
 
 	response, err := c.HttpClient.Do(req)
 	if err != nil {
-		return unitconverter.Reading{
+		return Reading{
 			Error: err,
 		}
 	} else {
@@ -71,15 +78,16 @@ func (c *Client) Get(host string, secret string) unitconverter.Reading {
 		var v []values
 		err = json.Unmarshal(data, &v)
 		if err != nil {
-			return unitconverter.Reading{
+			return Reading{
 				Error: err,
 			}
 		}
 
-		return unitconverter.Reading{
-			SGV:   v[0].Sgv,
-			Delta: v[0].Delta,
-			Error: nil,
+		return Reading{
+			SGV:       v[0].Sgv,
+			Delta:     v[0].Delta,
+			Direction: v[0].Direction,
+			Error:     nil,
 		}
 	}
 }

@@ -39,6 +39,7 @@ var _ = Describe("Get", func() {
 		It("Contains correct values", func() {
 			Expect(reading.SGV).To(Equal(float32(122)))
 			Expect(reading.Delta).To(Equal(float32(-0.5)))
+			Expect(reading.Direction).To(Equal("Flat"))
 		})
 	})
 
@@ -62,6 +63,7 @@ var _ = Describe("Get", func() {
 		It("Contains zero values", func() {
 			Expect(reading.SGV).To(Equal(float32(0)))
 			Expect(reading.Delta).To(Equal(float32(0)))
+			Expect(reading.Direction).To(Equal(""))
 		})
 	})
 
@@ -85,6 +87,7 @@ var _ = Describe("Get", func() {
 		It("Contains zero values", func() {
 			Expect(reading.SGV).To(Equal(float32(0)))
 			Expect(reading.Delta).To(Equal(float32(0)))
+			Expect(reading.Direction).To(Equal(""))
 		})
 	})
 })
