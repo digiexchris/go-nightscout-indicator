@@ -20,3 +20,11 @@ func FormatTitle(units bool, value float32, delta float32) string {
 
 	return fmt.Sprintf("%.0f (%.0f)", value, delta)
 }
+
+func GetUnitString(units bool) string {
+	if units {
+		return "mmol/l"
+	} else {
+		return "mg/dl"
+	}
+}

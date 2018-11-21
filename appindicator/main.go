@@ -63,6 +63,7 @@ func (t *tray) Run() {
 
 func (t *tray) SetUnits(mmol bool) {
 	t.units = mmol
+	systray.SetTitle(unitconverter.FormatTitle(t.units, t.currentReading.SGV, t.currentReading.Delta))
 }
 
 func (t *tray) SetTitleValues(reading unitconverter.Reading) {
@@ -101,14 +102,15 @@ func (t *tray) onReady() {
 	systray.SetTitle(unitconverter.FormatTitle(t.units, t.currentReading.SGV, t.currentReading.Delta))
 	systray.SetTooltip("Nightscout Indicator")
 	mUrl := systray.AddMenuItem("About", "About the indicator")
-	mToggle := systray.AddMenuItem("mmol/l", "Switch to mmol/l")
+
+	toggleTitle := unitconverter.GetUnitString(unitconverter.MMOL)
+	mToggle := systray.AddMenuItem(toggleTitle, fmt.Sprintf("Switch to %s", toggleTitle))
 
 	systray.AddSeparator()
-	mQuitOrig := systray.AddMenuItem("Quit", "Quit")
+	mQuit := systray.AddMenuItem("Quit", "Quit")
 
 	go func() {
-		//todo make these things return events to the applicationmanager
-		<-mQuitOrig.ClickedCh
+		<-mQuit.ClickedCh
 		fmt.Println("Requesting quit")
 		close(t.newReading)
 		systray.Quit()
@@ -116,7 +118,6 @@ func (t *tray) onReady() {
 	}()
 
 	for {
-		//todo make these things return events to the applicationmanager
 		select {
 		case <-mUrl.ClickedCh:
 			open.Run("https://github.com/digiexchris")
@@ -124,12 +125,10 @@ func (t *tray) onReady() {
 
 			if t.GetUnits() == unitconverter.MMOL {
 				t.SetUnits(unitconverter.MGDL)
-				mToggle.SetTitle("mmol/l")
-				systray.SetTitle(unitconverter.FormatTitle(t.units, t.currentReading.SGV, t.currentReading.Delta))
+				mToggle.SetTitle(unitconverter.GetUnitString(unitconverter.MMOL))
 			} else {
 				t.SetUnits(unitconverter.MMOL)
-				mToggle.SetTitle("mg/dl")
-				systray.SetTitle(unitconverter.FormatTitle(t.units, t.currentReading.SGV, t.currentReading.Delta))
+				mToggle.SetTitle(unitconverter.GetUnitString(unitconverter.MGDL))
 			}
 
 		}
