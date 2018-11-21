@@ -1,14 +1,11 @@
 package applicationmanager
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/digiexchris/go-nightscout-indicator/appindicator"
 	"github.com/digiexchris/go-nightscout-indicator/configuration"
+	"github.com/digiexchris/go-nightscout-indicator/nightscoutclient"
 	"github.com/digiexchris/go-nightscout-indicator/unitconverter"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"time"
 )
 
@@ -26,6 +23,7 @@ type applicationManager struct {
 	displayErrorIcon bool
 	Readings         chan unitconverter.Reading
 	AppIndicator     appindicator.Tray
+	Client           nightscoutclient.NightscoutClient
 }
 
 func (sm *applicationManager) SetUnits(defaultMmol bool) {
@@ -46,71 +44,20 @@ func New() ApplicationManager {
 	sm := &applicationManager{
 		AppIndicator: appindicator.New(readingChannel),
 		Readings:     readingChannel,
+		Client:       nightscoutclient.New(),
 	}
-	sm.Readings <- refresh()
+	sm.Readings <- sm.Client.Get(configuration.App.NightscoutHost, configuration.App.ApiSecret)
 
 	return sm
 }
 
 func (sm *applicationManager) RefreshValues() {
-	reading := refresh()
+	reading := sm.Client.Get(configuration.App.NightscoutHost, configuration.App.ApiSecret)
 	sm.Readings <- reading
 	if reading.Error != nil {
 		log.Printf("Error reading new values: %s", reading.Error)
 	} else {
 		log.Printf("Requested new values: %f %f", reading.SGV, reading.Delta)
-	}
-}
-
-func refresh() (reading unitconverter.Reading) {
-
-	type values struct {
-		Sgv   float32
-		Delta float32
-	}
-
-	url := fmt.Sprintf("https://%s/api/v1/entries/current.json", configuration.App.NightscoutHost)
-	timeout := time.Duration(5 * time.Second)
-	client := &http.Client{
-		Timeout: timeout,
-	}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	req.Header.Set("API-SECRET", configuration.App.ApiSecret)
-
-	response, err := client.Do(req)
-	if err != nil {
-		return unitconverter.Reading{
-			Error: err,
-		}
-	} else {
-		data, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return unitconverter.Reading{
-				Error: err,
-			}
-		}
-
-		var v []values
-		err = json.Unmarshal(data, &v)
-		if err != nil {
-			return unitconverter.Reading{
-				Error: err,
-			}
-		}
-
-		return unitconverter.Reading{
-			SGV:   v[0].Sgv,
-			Delta: v[0].Delta,
-			Error: nil,
-		}
-	}
-
-	return unitconverter.Reading{
-		Error: err,
 	}
 }
 
