@@ -5,7 +5,6 @@ import (
 	"github.com/tkanos/gonfig"
 	"log"
 	"os"
-	"path/filepath"
 	"time"
 )
 
@@ -20,9 +19,9 @@ type Config struct {
 
 func Load() error {
 
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	dir, err := os.Getwd()
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	file := fmt.Sprintf("%s/config.json", dir)
