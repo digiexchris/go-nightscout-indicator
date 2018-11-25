@@ -12,7 +12,8 @@ import (
 
 type tray struct {
 	units          bool
-	errorState     bool
+	errorIconState bool
+	oldIconState   bool
 	currentReading nightscoutclient.Reading //for use if we have to modify the existing display
 	newReading     chan nightscoutclient.Reading
 }
@@ -44,9 +45,9 @@ func (t *tray) Run() {
 	go func() {
 		for reading := range t.newReading {
 			if reading.Error != nil {
-				t.errorState = true
+				t.errorIconState = true
 			} else {
-				t.errorState = false
+				t.errorIconState = false
 			}
 			t.SetTitleValues(reading)
 		}
@@ -76,6 +77,10 @@ func (t *tray) SetErrorIcon() {
 	systray.SetIcon(icon.IconError)
 }
 
+func (t *tray) SetOldIcon() {
+	systray.SetIcon(icon.IconClock)
+}
+
 func (t *tray) SetNormalIcon() {
 	systray.SetIcon(icon.IconNormal)
 }
@@ -83,17 +88,27 @@ func (t *tray) SetNormalIcon() {
 func (t *tray) ManageErrorState() {
 
 	if t.currentReading.Error != nil {
-		if t.errorState == false {
-			t.errorState = true
+		if t.errorIconState == false {
+			t.errorIconState = true
 			t.SetErrorIcon()
 		} else {
-			t.errorState = false
+			t.errorIconState = false
 			t.SetNormalIcon()
 		}
 	} else {
-		if t.errorState == true {
-			t.errorState = false
+		if t.errorIconState == true {
+			t.errorIconState = false
 			t.SetNormalIcon()
+		}
+
+		if t.currentReading.OldReading == true {
+			if t.oldIconState == false {
+				t.oldIconState = true
+				t.SetOldIcon()
+			} else {
+				t.oldIconState = false
+				t.SetNormalIcon()
+			}
 		}
 	}
 }

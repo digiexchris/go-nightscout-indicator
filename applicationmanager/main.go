@@ -46,19 +46,25 @@ func New() ApplicationManager {
 		Readings:     readingChannel,
 		Client:       nightscoutclient.New(),
 	}
-	sm.Readings <- sm.Client.Get(configuration.App.NightscoutHost, configuration.App.ApiSecret)
+	sm.RefreshValues()
 
 	return sm
 }
 
 func (sm *applicationManager) RefreshValues() {
 	reading := sm.Client.Get(configuration.App.NightscoutHost, configuration.App.ApiSecret)
-	sm.Readings <- reading
+
 	if reading.Error != nil {
 		log.Printf("Error reading new values: %s", reading.Error)
 	} else {
-		log.Printf("Requested new values: %f %f", reading.SGV, reading.Delta)
+		oldThreshold := time.Now().Add(-time.Minute * 6)
+		if reading.Date.Before(oldThreshold) {
+			reading.OldReading = true
+		}
+		log.Printf("Requested new values: %f %f %s, %s", reading.SGV, reading.Delta, reading.Direction, reading.Date)
 	}
+
+	sm.Readings <- reading
 }
 
 func (sm *applicationManager) Run() {

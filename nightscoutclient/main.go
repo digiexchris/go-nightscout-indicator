@@ -4,15 +4,38 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type Reading struct {
-	SGV       float32
-	Delta     float32
-	Error     error
-	Direction string
+	SGV        float32
+	Delta      float32
+	Error      error
+	Direction  string
+	Date       time.Time
+	OldReading bool
+}
+
+type nightscoutTime struct {
+	time.Time
+}
+
+//func (obj nightscoutTime) MarshalJSON() ([]byte, error) {
+//	seconds := time.Time(obj).Unix()
+//	return []byte(strconv.FormatInt(seconds, 10)), nil
+//}
+
+func (ct *nightscoutTime) UnmarshalJSON(b []byte) (err error) {
+	i, err := strconv.ParseInt(string(b), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	ct.Time = time.Unix(i/1000, 1)
+	return
 }
 
 type NightscoutClient interface {
@@ -56,6 +79,7 @@ func (c *Client) Get(host string, secret string) Reading {
 		Sgv       float32
 		Delta     float32
 		Direction string
+		Date      nightscoutTime
 	}
 
 	url := fmt.Sprintf("https://%s/api/v1/entries/current.json", host)
@@ -69,6 +93,7 @@ func (c *Client) Get(host string, secret string) Reading {
 
 	response, err := c.HttpClient.Do(req)
 	if err != nil {
+		log.Println(err)
 		return Reading{
 			Error: err,
 		}
@@ -78,6 +103,7 @@ func (c *Client) Get(host string, secret string) Reading {
 		var v []values
 		err = json.Unmarshal(data, &v)
 		if err != nil {
+			log.Println(err)
 			return Reading{
 				Error: err,
 			}
@@ -87,6 +113,7 @@ func (c *Client) Get(host string, secret string) Reading {
 			SGV:       v[0].Sgv,
 			Delta:     v[0].Delta,
 			Direction: v[0].Direction,
+			Date:      v[0].Date.Time,
 			Error:     nil,
 		}
 	}
